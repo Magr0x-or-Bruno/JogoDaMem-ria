@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saúde em Pares — Jogo da Memória</title>
+<style>
+:root{--navy:#172554;--blue:#3563e9;--mint:#dcfce7;--paper:#f7f8ff;--gold:#fde68a;--ink:#1e293b;--purple:#7c3aed}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;background:radial-gradient(ellipse at top left,#dbeafe 0,transparent 38%),radial-gradient(ellipse at top right,#ede9fe 0,transparent 34%),#f8fafc;color:var(--ink);min-height:100vh}
+header{position:relative;overflow:hidden;text-align:center;padding:44px 18px 38px;background:linear-gradient(120deg,#172554,#4338ca 58%,#7c3aed);color:white}
+header:before,header:after{content:"";position:absolute;border-radius:50%;background:#ffffff12}
+header:before{width:240px;height:240px;top:-130px;left:5%}header:after{width:300px;height:300px;bottom:-220px;right:8%}
+header h1{position:relative;margin:0 0 10px;font-size:clamp(2rem,5vw,3.1rem);letter-spacing:-.04em}
+header p{position:relative;margin:0 auto;max-width:720px;line-height:1.6;color:#e0e7ff;font-size:1.03rem}
+main{max-width:1040px;margin:0 auto;padding:26px 16px 42px}
+.topbar{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:18px}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.stat{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:12px 16px;font-weight:750;box-shadow:0 5px 18px #1725540a}
+.stat span{color:var(--purple)}
+button{font:inherit;cursor:pointer}
+#restart{border:0;border-radius:13px;background:linear-gradient(135deg,#3563e9,#7c3aed);color:white;padding:12px 17px;font-weight:750;box-shadow:0 8px 18px #4338ca30;transition:transform .18s,box-shadow .18s}
+#restart:hover{transform:translateY(-2px);box-shadow:0 12px 22px #4338ca35}
+.instructions{background:#fff;border:1px solid #e2e8f0;border-left:5px solid #8b5cf6;border-radius:16px;padding:16px 18px;margin-bottom:20px;line-height:1.6;box-shadow:0 8px 24px #17255408}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.card{min-height:158px;border:1px solid #ffffff55;border-radius:19px;background:linear-gradient(145deg,#3563e9,#4f46e5 65%,#7c3aed);color:white;box-shadow:0 9px 20px #312e8130;position:relative;padding:13px;display:flex;align-items:center;justify-content:center;text-align:center;transition:transform .18s,box-shadow .18s,background .18s;overflow-wrap:anywhere}
+.card:before{content:"";position:absolute;inset:7px;border:1px solid #ffffff35;border-radius:13px;pointer-events:none}
+.card:hover{transform:translateY(-4px) rotate(-.5deg);box-shadow:0 14px 26px #312e8138}
+.card .back{font-size:2.8rem;font-weight:800;line-height:1;text-shadow:0 3px 8px #17255435}
+.card .front{display:none;font-size:.98rem;line-height:1.4;font-weight:750;position:relative;z-index:1}
+.card.revealed,.card.matched{background:linear-gradient(145deg,#fff,#f5f3ff);color:#27215c;border:2px solid #a5b4fc;box-shadow:0 8px 18px #6366f11c}
+.card.revealed:before,.card.matched:before{border-color:#c4b5fd}
+.card.revealed .back,.card.matched .back{display:none}
+.card.revealed .front,.card.matched .front{display:block}
+.card.matched{background:linear-gradient(145deg,#ecfdf5,#d1fae5);border-color:#6ee7b7;cursor:default;box-shadow:0 7px 18px #05966918}
+.card.matched:before{border-color:#a7f3d0}
+.card:focus-visible,#restart:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+#message{min-height:34px;text-align:center;font-weight:750;margin:20px 0 8px;color:#4338ca;font-size:1.03rem}
+.note{font-size:.92rem;line-height:1.7;color:#475569;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:18px 20px;margin-top:22px;box-shadow:0 8px 24px #17255408}
+footer{text-align:center;padding:18px;color:#64748b;font-size:.85rem}
+@media(max-width:700px){header{padding:34px 16px 30px}.grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.card{min-height:140px;padding:9px;border-radius:16px}.card .front{font-size:.88rem}}
+@media(max-width:430px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.card{min-height:130px}.topbar{align-items:stretch}.stats{width:100%}.stat{flex:1;text-align:center}#restart{width:100%}}
+</style>
+</head>
+<body>
+<header>
+  <h1>🧠 Saúde em Pares</h1>
+  <p>Jogo da memória digital: relacione condições de saúde a hábitos de prevenção, cuidado e busca de ajuda.</p>
+</header>
+<main>
+  <div class="topbar">
+    <div class="stats">
+      <div class="stat">Jogadas: <span id="moves">0</span></div>
+      <div class="stat">Pares: <span id="pairs">0</span>/8</div>
+    </div>
+    <button id="restart" type="button">↻ Reiniciar jogo</button>
+  </div>
+  <div class="instructions"><strong>Como jogar:</strong> toque em duas cartas para virá-las. Se uma condição de saúde combinar com um hábito de cuidado, o par fica aberto. Encontre os oito pares!</div>
+  <section class="grid" id="grid" aria-label="Cartas do jogo da memória"></section>
+  <div id="message" role="status" aria-live="polite">Vamos começar! Encontre o primeiro par.</div>
+  <div class="note"><strong>Importante:</strong> hábitos saudáveis podem ajudar na prevenção e no cuidado, mas não substituem avaliação profissional nem tratamentos prescritos. <strong>AVC:</strong> rosto torto, fraqueza em um braço ou fala alterada são sinais de emergência — chame o SAMU (192) imediatamente. <strong>Problemas cardíacos:</strong> dor ou pressão no peito, falta de ar ou desmaio podem exigir atendimento urgente. <strong>Saúde mental:</strong> ansiedade e depressão merecem acolhimento e podem precisar de ajuda profissional; hábitos saudáveis não são uma cura isolada.</div>
+</main>
+<footer>Material educativo • Saúde e qualidade de vida</footer>
+<script>
+const pairs = [
+  {id:"hipertensao", disease:"HIPERTENSÃO", emoji:"❤️", habit:"Reduzir o sal, priorizar alimentos frescos e praticar atividade física orientada."},
+  {id:"hipotensao", disease:"HIPOTENSÃO", emoji:"💧", habit:"Manter boa hidratação e levantar-se devagar; investigar episódios frequentes com profissional de saúde."},
+  {id:"colesterol", disease:"COLESTEROL ALTO", emoji:"🥗", habit:"Consumir mais fibras e menos gorduras saturadas; manter atividade física regular."},
+  {id:"diabetes", disease:"DIABETES", emoji:"🍎", habit:"Ter refeições equilibradas, movimentar-se regularmente e acompanhar a glicose conforme orientação."},
+  {id:"cardiaca", disease:"DOENÇAS CARDÍACAS", emoji:"🫀", habit:"Não fumar, ter alimentação equilibrada, movimentar-se e acompanhar pressão e colesterol."},
+  {id:"avc", disease:"AVC (DERRAME)", emoji:"🧠", habit:"Controlar pressão, diabetes e colesterol; não fumar e reconhecer sinais para chamar emergência."},
+  {id:"ansiedade", disease:"ANSIEDADE", emoji:"🌿", habit:"Praticar respiração tranquila, manter rotina de sono e atividade física; buscar apoio profissional se necessário."},
+  {id:"depressao", disease:"DEPRESSÃO", emoji:"🤝", habit:"Manter contato com pessoas de confiança, rotina de sono e atividades possíveis; buscar ajuda profissional."}
+];
+let deck=[], first=null, second=null, lock=false, moves=0, found=0;
+const grid=document.getElementById('grid'), movesEl=document.getElementById('moves'), pairsEl=document.getElementById('pairs'), message=document.getElementById('message');
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function makeCard(item,type){
+ const b=document.createElement('button'); b.type='button'; b.className='card'; b.dataset.id=item.id; b.dataset.type=type;
+ b.setAttribute('aria-label','Carta fechada');
+ const front=type==='disease'?`${item.emoji}<br>${item.disease}`:item.habit;
+ b.innerHTML=`<span class="back" aria-hidden="true">?</span><span class="front">${front}</span>`;
+ b.addEventListener('click',()=>flip(b)); return b;
+}
+function start(){
+ deck=[];first=null;second=null;lock=false;moves=0;found=0;
+ movesEl.textContent='0';pairsEl.textContent='0';message.textContent='Vamos começar! Encontre o primeiro par.';
+ grid.innerHTML='';
+ pairs.forEach(p=>{deck.push({item:p,type:'disease'},{item:p,type:'habit'});});
+ shuffle(deck).forEach(c=>grid.appendChild(makeCard(c.item,c.type)));
+}
+function flip(card){
+ if(lock||card.classList.contains('matched')||card===first)return;
+ card.classList.add('revealed');card.setAttribute('aria-label',card.dataset.type==='disease'?'Carta de doença revelada':'Carta de hábito revelada');
+ if(!first){first=card;return;}
+ second=card;moves++;movesEl.textContent=moves;
+ const match=first.dataset.id===second.dataset.id && first.dataset.type!==second.dataset.type;
+ if(match){
+  first.classList.add('matched');second.classList.add('matched');
+  first.classList.remove('revealed');second.classList.remove('revealed');
+  first.disabled=true;second.disabled=true;found++;pairsEl.textContent=found;
+  first.setAttribute('aria-label','Par encontrado');second.setAttribute('aria-label','Par encontrado');
+  first=null;second=null;
+  if(found===pairs.length)message.textContent=`Parabéns! Você encontrou todos os pares em ${moves} jogadas.`;
+  else message.textContent='Muito bem! Você encontrou um par.';
+ }else{
+  lock=true;message.textContent='Não combinam. Tente novamente!';
+  setTimeout(()=>{[first,second].forEach(c=>{c.classList.remove('revealed');c.setAttribute('aria-label','Carta fechada');});first=null;second=null;lock=false;},1000);
+ }
+}
+document.getElementById('restart').addEventListener('click',start);
+start();
+</script>
+</body>
+</html>
